@@ -40,9 +40,11 @@ def _handle_tweep_error(app, e):
         """User not found => reraise exception"""
         print("Reraising")
         raise e
-    if e.api_code == 63:
+    elif e.api_code == 63:
         """User suspended => reraise exception"""
         print("Reraising")
+        raise e
+    else:
         raise e
 
 
@@ -78,14 +80,16 @@ def fetch_tweets(apps, process_tweets, minutes=15, mode='new', **kwargs):
         Mode in which we should discover tweets: polling for new ones or
         diving into the past.
     """
-    print("Search with params = {}".format(kwargs))
+    print("Search {} with params = {}".format(mode, kwargs))
 
     if mode == 'new':
         collector = NewTweetsCollector(
             process_tweets, minutes=minutes, **kwargs)
-    else:
+    elif mode == 'past':
         collector = PastTweetsCollector(
             process_tweets, minutes=minutes, **kwargs)
+    else:
+        raise ValueError("mode {} is not recognised, should be new or past".format(mode))
 
     print("Starting to collect...")
     while True:
