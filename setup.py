@@ -11,5 +11,6 @@ setup(
     packages=['tweepyrate'],
     install_requires=[
         'markdown',
+        'tweepy',
     ],
 )
