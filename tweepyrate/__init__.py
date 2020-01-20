@@ -1,6 +1,9 @@
 import tweepy
 import json
 import time
+from tqdm import tqdm
+from multiprocessing import Pool
+from itertools import cycle
 from .collector import NewTweetsCollector, PastTweetsCollector
 
 
@@ -46,6 +49,66 @@ def _handle_tweep_error(app, e):
         raise e
     else:
         raise e
+
+
+def _fetch_status(*args):
+    # TODO: Fix this. I don't know why I should do this way
+    app, tweet_id = args[0]
+    try:
+        status = app.get_status(tweet_id, tweet_mode="extended")
+        return (tweet_id, status)
+    except tweepy.TweepError as e:
+        return (tweet_id, e)
+
+
+def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
+    """
+    Fetch tweets using multiple apps in a parallel fashion
+
+    Arguments:
+    ----------
+    apps: list containing Tweepy apps
+        The apps to be used to fetch the tweets
+
+    tweet_ids: list of Tweet ids
+        List of ids of tweets to be fetched
+
+    tweet_callback: a callback
+        Function receiving tweet_id and response when tweet could be fetched
+
+    error_callback: a callback
+        Function receiving tweet_id and response when tweet couldn't be fetched
+
+    Returns:
+    --------
+
+    new_tweets, new_errors: pair of integers
+        Number of new tweets or errors
+    """
+    with Pool(len(apps)) as p:
+        iterator = p.imap(
+            _fetch_status,
+            zip(cycle(apps), tweet_ids)
+        )
+
+        # This hack is just to make tqdm work.
+        ret = list(tqdm(iterator, total=len(tweet_ids)))
+
+        new_tweets = 0
+        new_errors = 0
+
+        for tweet_id, response in ret:
+            if type(response) is tweepy.Status:
+                tweet_callback(tweet_id, response)
+                new_tweets += 1
+            elif type(response) is tweepy.TweepError:
+                error_callback(tweet_id, response)
+                new_errors += 1
+            else:
+                assert False, "Response should be Status or Error"
+
+        return new_tweets, new_errors
+
 
 
 def call_for_each_app(apps, func):
