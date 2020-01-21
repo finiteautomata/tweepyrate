@@ -54,11 +54,18 @@ def _handle_tweep_error(app, e):
 def _fetch_status(*args):
     # TODO: Fix this. I don't know why I should do this way
     app, tweet_id = args[0]
-    try:
-        status = app.get_status(tweet_id, tweet_mode="extended")
-        return (tweet_id, status)
-    except tweepy.TweepError as e:
-        return (tweet_id, e)
+    backoff = 15
+    while True:
+        try:
+            status = app.get_status(tweet_id, tweet_mode="extended")
+            return (tweet_id, status)
+        except tweepy.TweepError as e:
+            return (tweet_id, e)
+        except tweepy.RateLimitError as e:
+            print(f"Rate limit -- sleeping for {backoff}s")
+            time.sleep(backoff)
+            backoff *= 2
+
 
 
 def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
@@ -92,7 +99,7 @@ def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
         )
 
         # This hack is just to make tqdm work.
-        ret = list(tqdm(iterator, total=len(tweet_ids)))
+        ret = tqdm(iterator, total=len(tweet_ids))
 
         new_tweets = 0
         new_errors = 0
@@ -105,6 +112,8 @@ def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
                 error_callback(tweet_id, response)
                 new_errors += 1
             else:
+                print(response)
+                print(type(response))
                 assert False, "Response should be Status or Error"
 
         return new_tweets, new_errors
