@@ -1,6 +1,7 @@
 import tweepy
 import json
 import time
+import random
 from tqdm import tqdm
 from multiprocessing import Pool
 from itertools import cycle
@@ -59,12 +60,13 @@ def _fetch_status(*args):
         try:
             status = app.get_status(tweet_id, tweet_mode="extended")
             return (tweet_id, status)
-        except tweepy.TweepError as e:
-            return (tweet_id, e)
         except tweepy.RateLimitError as e:
             print(f"Rate limit -- sleeping for {backoff}s")
             time.sleep(backoff)
             backoff *= 2
+        except tweepy.TweepError as e:
+            return (tweet_id, e)
+
 
 
 
@@ -93,6 +95,7 @@ def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
         Number of new tweets or errors
     """
     with Pool(len(apps)) as p:
+        random.shuffle(tweet_ids)
         iterator = p.imap(
             _fetch_status,
             zip(cycle(apps), tweet_ids)
