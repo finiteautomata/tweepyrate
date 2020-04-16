@@ -1,5 +1,7 @@
 # tweepyrate
-A Python library to retrieve huge amounts of tweets
+
+
+A python library which adds some functionalities on top of [`tweepy`](https://github.com/tweepy/tweepy)
 
 
 ## Streaming
