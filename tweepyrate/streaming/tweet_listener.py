@@ -1,5 +1,4 @@
 import tweepy
-from mongoengine import NotUniqueError
 
 class TweetListener(tweepy.StreamListener):
     """
