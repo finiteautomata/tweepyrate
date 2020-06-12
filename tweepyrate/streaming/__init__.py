@@ -83,4 +83,4 @@ def stream_query(query, app, queue, listener_class=TweetListener, **kwargs):
     myStreamListener = listener_class(query, queue)
     myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
     myStream.filter(track=[query], is_async=True, **kwargs)
-    return myStreamListener
+    return myStream, myStreamListener
