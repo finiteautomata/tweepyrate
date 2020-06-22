@@ -68,7 +68,19 @@ def _fetch_status(*args):
             return (tweet_id, e)
 
 
+def get_user_tweets(app, user_id, **kwargs):
+    """
+    Fetch all the tweets of a given user
+    """
+    tweets = []
 
+    new_tweets = app.user_timeline(user_id, tweet_mode="extended", **kwargs)
+    while new_tweets:
+        tweets += new_tweets
+        min_id = min(tw.id for tw in new_tweets)
+        new_tweets = app.user_timeline(user_id, max_id=min_id, tweet_mode="extended", **kwargs)
+
+    return tweets
 
 def get_tweets(apps, tweet_ids, tweet_callback, error_callback):
     """
