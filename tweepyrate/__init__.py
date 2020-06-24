@@ -77,7 +77,7 @@ def get_user_tweets(app, user_id, **kwargs):
     new_tweets = app.user_timeline(user_id, tweet_mode="extended", **kwargs)
     while new_tweets:
         tweets += new_tweets
-        min_id = min(tw.id for tw in new_tweets)
+        min_id = min(tw.id for tw in new_tweets)-1
         new_tweets = app.user_timeline(user_id, max_id=min_id, tweet_mode="extended", **kwargs)
 
     return tweets
