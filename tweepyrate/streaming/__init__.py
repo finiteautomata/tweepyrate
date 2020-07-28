@@ -61,7 +61,7 @@ def create_queue(num_workers, worker_class):
 
     return queue
 
-def stream_query(query, app, queue, listener_class=TweetListener, **kwargs):
+def stream_query(query, app, queue, listener_class=TweetListener, listener_args={}, **kwargs):
     """
 
     Start streaming query using app and pushing to some queue
@@ -80,7 +80,7 @@ def stream_query(query, app, queue, listener_class=TweetListener, **kwargs):
     Other argumentes are passed to the `filter` function of tweepy.Stream
 
     """
-    myStreamListener = listener_class(query, queue)
+    myStreamListener = listener_class(query, queue, **listener_args)
     myStream = tweepy.Stream(auth = app.auth, listener=myStreamListener)
     myStream.filter(track=[query], is_async=True, **kwargs)
     return myStream, myStreamListener

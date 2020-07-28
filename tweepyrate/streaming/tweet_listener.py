@@ -11,10 +11,11 @@ class TweetListener(tweepy.StreamListener):
 
     https://github.com/tweepy/tweepy/issues/448
     """
-    def __init__(self, query, queue):
+    def __init__(self, query, queue, verbose=True):
         self.query = query
         self.queue = queue
         self.count = 0
+        self.verbose = verbose
         super().__init__()
 
     def on_status(self, status):
@@ -22,6 +23,7 @@ class TweetListener(tweepy.StreamListener):
         self.count += 1
 
     def on_error(self, status_code):
-        print(f"Error tipo: {status_code} para query {self.query}")
-        print("We have to wait...")
+        if self.verbose:
+            print(f"Error tipo: {status_code} para query {self.query}")
+            print("We have to wait...")
         return True
